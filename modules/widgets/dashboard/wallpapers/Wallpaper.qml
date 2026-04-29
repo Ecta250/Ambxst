@@ -277,9 +277,19 @@ PanelWindow {
             delayedThumbnailGen.start();
     }
 
-    onCurrentWallpaperChanged:
-    // Matugen se ejecuta manualmente en las funciones de cambio
-    {}
+            // AMBXST_BGPNG_PATCH START — exports current wallpaper as ~/bg.png
+    onCurrentWallpaperChanged: {
+        if (currentWallpaper && GlobalStates.wallpaperManager === wallpaper) {
+            exportBgPngProcess.command = ["bash", "-c", "ffmpeg -y -loglevel error -i \"$1\" -frames:v 1 \"$HOME/bg.png\" </dev/null", "_", currentWallpaper];
+            exportBgPngProcess.running = true;
+        }
+    }
+
+    Process {
+        id: exportBgPngProcess
+        running: false
+    }
+    // AMBXST_BGPNG_PATCH END
 
     function setWallpaper(path, targetScreen = null) {
         if (GlobalStates.wallpaperManager && GlobalStates.wallpaperManager !== wallpaper) {

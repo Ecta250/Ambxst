@@ -109,6 +109,10 @@ Singleton {
     property int launcherSelectedIndex: -1
     property int launcherCurrentTab: 0
 
+    // AMBXST_CAT_STATE_PATCH START — category filter for launcher
+    property string launcherCategoryFilter: ""
+    // AMBXST_CAT_STATE_PATCH END
+
     function clearLauncherState() {
         launcherSearchText = "";
         launcherSelectedIndex = -1;

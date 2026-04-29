@@ -31,6 +31,12 @@ QtObject {
 
     function run(command) {
         console.log("IPC run command received:", command);
+        // AMBXST_CAT_RUN_PATCH START — launcher-category:<Name> IPC
+        if (command && command.indexOf("launcher-category:") === 0) {
+            toggleLauncherWithCategory(command.substring("launcher-category:".length));
+            return;
+        }
+        // AMBXST_CAT_RUN_PATCH END
         switch (command) {
             // Launcher (Standalone Notch Module)
             case "launcher": toggleLauncher(); break;
@@ -131,6 +137,24 @@ QtObject {
             Visibilities.setActiveModule("launcher");
         }
     }
+
+    // AMBXST_CAT_FN_PATCH START — open launcher filtered to a category
+    function toggleLauncherWithCategory(category) {
+        const isActive = Visibilities.currentActiveModule === "launcher";
+        const currentCategory = GlobalStates.launcherCategoryFilter;
+        if (isActive && currentCategory === category && GlobalStates.widgetsTabCurrentIndex === 0 && GlobalStates.launcherSearchText === "") {
+            Visibilities.setActiveModule("");
+            return;
+        }
+        GlobalStates.widgetsTabCurrentIndex = 0;
+        GlobalStates.launcherSearchText = "";
+        GlobalStates.launcherSelectedIndex = -1;
+        GlobalStates.launcherCategoryFilter = category;
+        if (!isActive) {
+            Visibilities.setActiveModule("launcher");
+        }
+    }
+    // AMBXST_CAT_FN_PATCH END
 
     function toggleDashboardTab(tabIndex) {
         const isActive = Visibilities.currentActiveModule === "dashboard";

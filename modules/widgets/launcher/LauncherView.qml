@@ -137,6 +137,20 @@ Rectangle {
         property var filteredApps: []
         property var appsById: ({})
 
+        // AMBXST_CAT_PROP_PATCH START — category-filter state + auto-clear on close
+        property string categoryFilter: GlobalStates.launcherCategoryFilter
+        onCategoryFilterChanged: updateFilteredApps()
+
+        Connections {
+            target: Visibilities
+            function onCurrentActiveModuleChanged() {
+                if (Visibilities.currentActiveModule !== "launcher") {
+                    GlobalStates.launcherCategoryFilter = "";
+                }
+            }
+        }
+        // AMBXST_CAT_PROP_PATCH END
+
         // Incremental loading state
         property var pendingApps: []
         property int loadedCount: 0
@@ -170,13 +184,20 @@ Rectangle {
             }
         }
 
+        // AMBXST_CAT_FILTER_PATCH START — applies categoryFilter to results
         function updateFilteredApps() {
+            let apps;
             if (searchText.length > 0) {
-                filteredApps = AppSearch.fuzzyQuery(searchText);
+                apps = AppSearch.fuzzyQuery(searchText);
             } else {
-                filteredApps = AppSearch.getAllApps();
+                apps = AppSearch.getAllApps();
             }
+            if (categoryFilter && categoryFilter.length > 0) {
+                apps = apps.filter(function (a) { return a.categories && a.categories.indexOf(categoryFilter) !== -1; });
+            }
+            filteredApps = apps;
         }
+        // AMBXST_CAT_FILTER_PATCH END
 
         onFilteredAppsChanged: {
             resultsList.enableScrollAnimation = false;
