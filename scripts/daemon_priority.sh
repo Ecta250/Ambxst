@@ -10,9 +10,12 @@ done
 
 # EasyEffects
 if command -v easyeffects >/dev/null; then
-	echo "Starting EasyEffects..."
-	pkill -x easyeffects 2>/dev/null || true
-	nohup easyeffects --gapplication-service >/dev/null 2>&1 &
+	if ! pgrep -x easyeffects >/dev/null; then
+		echo "Starting EasyEffects..."
+		nohup easyeffects --gapplication-service >/dev/null 2>&1 &
+	else
+		echo "EasyEffects already running, skipping."
+	fi
 else
 	echo "Warning: easyeffects not found in PATH"
 fi
