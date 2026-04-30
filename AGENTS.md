@@ -88,6 +88,7 @@ Ambxst is a highly customizable Wayland shell built with Quickshell. It provides
 | `AxctlService` | Singleton | `modules/services/AxctlService.qml` | Compositor abstraction (focus, dispatch) |
 | `StateService` | Singleton | `modules/services/StateService.qml` | JSON persistence for session state |
 | `FocusGrabManager` | Singleton | `modules/services/FocusGrabManager.qml` | Input focus coordination |
+| `SafeLoader` | Component | `modules/components/SafeLoader.qml` | Loader with error handling and fallback UI |
 
 ## CONVENTIONS
 - **Singletons**: `pragma Singleton` + `Singleton { id: root }` for all services and global state.
@@ -114,6 +115,7 @@ Ambxst is a highly customizable Wayland shell built with Quickshell. It provides
 ```bash
 # Run shell (requires Quickshell + Hyprland)
 qs -p shell.qml
+
 # Or via CLI wrapper:
 ./cli.sh
 

@@ -20,6 +20,27 @@ if [ -n "${QML2_IMPORT_PATH:-}" ] && [ -z "${QML_IMPORT_PATH:-}" ]; then
 	export QML_IMPORT_PATH="$QML2_IMPORT_PATH"
 fi
 
+# Qt Quick GPU acceleration settings (user overrides preserved)
+# Vulkan preferred for both AMD and NVIDIA (requires mesa/26.0+ or NVIDIA 525+)
+# Falls back gracefully on older drivers.
+# We probe with 'vulkaninfo --summary' rather than 'glxinfo' because glxinfo
+# only indicates OpenGL/GLX availability — it does NOT confirm a Vulkan ICD
+# is present. Setting QT_QUICK_BACKEND=vulkan without a working ICD causes Qt
+# to silently fall back to software rendering.
+if [[ -z "${QT_QUICK_BACKEND:-}" ]]; then
+	if vulkaninfo --summary >/dev/null 2>&1; then
+		export QT_QUICK_BACKEND=vulkan
+	else
+		export QT_QUICK_BACKEND=opengl
+	fi
+fi
+
+# Faster QML array operations
+[[ -z "${QML_USE_TYPED_ARRAYS:-}" ]] && export QML_USE_TYPED_ARRAYS=1
+
+# Multi-threaded rendering for smoother UI
+[[ -z "${QT_THREADED_RENDERER:-}" ]] && export QT_THREADED_RENDERER=1
+
 # Ensure config files exist - copy from preset if missing
 ensure_config_files() {
 	local config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/ambxst/config"

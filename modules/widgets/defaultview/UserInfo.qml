@@ -59,11 +59,13 @@ Item {
                     height: 24
                     radius: Styling.radius(0)
                     clip: true
+                    color: "transparent"
 
                     Image {
                         anchors.fill: parent
                         source: `file://${Quickshell.env("HOME")}/.face.icon`
                         fillMode: Image.PreserveAspectCrop
+                        sourceSize: Qt.size(48, 48)
                     }
                 }
             }

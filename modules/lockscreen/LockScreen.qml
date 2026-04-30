@@ -147,7 +147,7 @@ WlSessionLockSurface {
         id: clockContainer
         anchors.centerIn: parent
         width: clockRow.width
-        height: hoursText.height + (hoursText.height * 0.5)
+        height: hoursText.height + (hoursText.height * 0.5) + 48
         z: 10
 
         property date currentTime: new Date()
@@ -275,7 +275,8 @@ WlSessionLockSurface {
             repeat: true
             onTriggered: clockContainer.currentTime = new Date()
         }
-    }
+
+        }
 
     // Music player (slides from left)
     Item {
@@ -412,6 +413,7 @@ WlSessionLockSurface {
                         smooth: true
                         asynchronous: true
                         visible: status === Image.Ready
+                        sourceSize: Qt.size(128, 128)
 
                         layer.enabled: true
                         layer.effect: MultiEffect {

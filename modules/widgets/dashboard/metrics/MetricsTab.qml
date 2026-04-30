@@ -179,12 +179,12 @@ Rectangle {
                     spacing: 16
 
                     // User avatar
-                    StyledRect {
+                    Rectangle {
                         id: avatarContainer
                         Layout.preferredWidth: 96
                         Layout.preferredHeight: 96
                         radius: Config.roundness > 0 ? (height / 2) * (Config.roundness / 16) : 0
-                        variant: "primary"
+                        color: "transparent"
 
                         Image {
                             id: userAvatar
@@ -195,6 +195,7 @@ Rectangle {
                             smooth: true
                             asynchronous: true
                             visible: status === Image.Ready
+                            sourceSize: Qt.size(192, 192)
 
                             layer.enabled: true
                             layer.effect: MultiEffect {
