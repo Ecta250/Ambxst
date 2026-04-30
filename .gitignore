@@ -2,3 +2,6 @@
 .ruff_cache/
 scripts/__pycache__
 .sisyphus
+assets/wallpapers_example
+assets/ambxst
+assets/screenshots
