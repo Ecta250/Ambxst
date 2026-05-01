@@ -207,7 +207,19 @@ QtObject {
         { label: "Desktop Text Color", keywords: "label font", section: 8, subSection: "desktop", subLabel: "Ambxst > Desktop", icon: Icons.palette, isIcon: true },
         
         // Ambxst > System
-        { label: "Shell System", keywords: "config settings ambxst", section: 8, subSection: "system", subLabel: "Ambxst > System", icon: Icons.circuitry, isIcon: true }
+        { label: "Shell System", keywords: "config settings ambxst", section: 8, subSection: "system", subLabel: "Ambxst > System", icon: Icons.circuitry, isIcon: true },
+
+        // --- Execute ---
+        { label: "Execute", keywords: "autostart autorun scripts commands startup run exec", section: 10, subSection: "", subLabel: "", icon: Icons.lightning, isIcon: true },
+
+        // Execute > Autostart
+        { label: "Autostart", keywords: "startup run exec bash script launch apps programs boot", section: 10, subSection: "autostart", subLabel: "Execute > Autostart", icon: Icons.lightning, isIcon: true },
+
+        // Execute > Hyprland
+        { label: "Hyprland Exec", keywords: "hyprctl dispatch exec compositor startup command", section: 10, subSection: "hyprland", subLabel: "Execute > Hyprland", icon: Icons.lightning, isIcon: true },
+
+        // Execute > Snippets
+        { label: "Snippets", keywords: "quick run bash commands manual fire trigger scripts shortcut", section: 10, subSection: "snippets", subLabel: "Execute > Snippets", icon: Icons.lightning, isIcon: true }
     ]
 
     property var items: staticItems.concat(dynamicItems)

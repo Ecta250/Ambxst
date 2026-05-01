@@ -21,6 +21,7 @@ import "defaults/prefix.js" as PrefixDefaults
 import "defaults/system.js" as SystemDefaults
 import "defaults/dock.js" as DockDefaults
 import "defaults/ai.js" as AiDefaults
+import "defaults/execute.js" as ExecuteDefaults
 import "ConfigValidator.js" as ConfigValidator
 
 Singleton {
@@ -55,9 +56,11 @@ Singleton {
     property bool systemReady: false
     property bool dockReady: false
     property bool aiReady: false
+    property bool executeReady: false
+    signal executeConfigReloaded()
     property bool keybindsInitialLoadComplete: false
 
-    property bool initialLoadComplete: themeReady && barReady && workspacesReady && overviewReady && notchReady && compositorReady && performanceReady && weatherReady && desktopReady && lockscreenReady && prefixReady && systemReady && dockReady && aiReady
+    property bool initialLoadComplete: themeReady && barReady && workspacesReady && overviewReady && notchReady && compositorReady && performanceReady && weatherReady && desktopReady && lockscreenReady && prefixReady && systemReady && dockReady && aiReady && executeReady
 
     // Compatibility aliases
     property alias loader: themeLoader
@@ -85,6 +88,7 @@ Singleton {
             "cp -n '" + root.presetDir + "/dock.json' '" + root.configDir + "/dock.json' 2>/dev/null || true; " +
             "cp -n '" + root.presetDir + "/ai.json' '" + root.configDir + "/ai.json' 2>/dev/null || true; " +
             "cp -n '" + root.presetDir + "/system.json' '" + root.configDir + "/system.json' 2>/dev/null || true; " +
+            "test -f '" + root.configDir + "/execute.json' || echo '{\"autostart\":[],\"hyprland\":[],\"snippets\":[]}' > '" + root.configDir + "/execute.json'; " +
             "echo 'Preset files copied if missing'"
         ]
     }
@@ -1187,6 +1191,51 @@ Singleton {
             property int sidebarWidth: 400
             property string sidebarPosition: "right"
             property bool sidebarPinnedOnStartup: false
+        }
+    }
+
+    // ============================================
+    // EXECUTE MODULE
+    // ============================================
+    FileView {
+        id: executeLoader
+        path: root.configDir + "/execute.json"
+        atomicWrites: true
+        watchChanges: true
+        onLoaded: {
+            if (!root.executeReady) {
+                validateModule("execute", executeLoader, ExecuteDefaults.data, () => {
+                    root.executeReady = true;
+                    Qt.callLater(() => { if (!root.pauseAutoSave) executeLoader.writeAdapter(); });
+                });
+            } else {
+                root.executeConfigReloaded();
+            }
+        }
+        onLoadFailed: {
+            if (error.toString().includes("FileNotFound") && !root.executeReady) {
+                handleMissingConfig("execute", executeLoader, ExecuteDefaults.data, () => {
+                    root.executeReady = true;
+                    Qt.callLater(() => { if (!root.pauseAutoSave) executeLoader.writeAdapter(); });
+                });
+            }
+        }
+        onFileChanged: {
+            root.pauseAutoSave = true;
+            reload();
+            root.pauseAutoSave = false;
+        }
+        onPathChanged: reload()
+        onAdapterUpdated: {
+            if (root.executeReady && !root.pauseAutoSave) {
+                executeLoader.writeAdapter();
+            }
+        }
+
+        adapter: JsonAdapter {
+            property list<var> autostart: []
+            property list<var> hyprland: []
+            property list<var> snippets: []
         }
     }
 
@@ -3336,6 +3385,9 @@ Singleton {
     // AI configuration
     property QtObject ai: aiLoader.adapter
 
+    // Execute configuration
+    property QtObject execute: executeLoader.adapter
+
     // Module save functions
     function saveBar() {
         barLoader.writeAdapter();
@@ -3378,6 +3430,9 @@ Singleton {
     }
     function saveAi() {
         aiLoader.writeAdapter();
+    }
+    function saveExecute() {
+        executeLoader.writeAdapter();
     }
 
     // Color helpers

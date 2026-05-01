@@ -23,7 +23,7 @@ Item {
     readonly property string activePreset: PresetsService.activePreset
 
     // Available config files
-    readonly property var availableConfigFiles: ["bar.js", "desktop.js", "dock.js", "compositor.js", "lockscreen.js", "notch.js", "overview.js", "performance.js", "theme.js", "workspaces.js"]
+    readonly property var availableConfigFiles: ["bar.js", "desktop.js", "dock.js", "compositor.js", "execute.js", "lockscreen.js", "notch.js", "overview.js", "performance.js", "theme.js", "workspaces.js"]
 
     // List model
     ListModel {
@@ -334,12 +334,16 @@ Item {
         updateMode = true;
         presetToUpdate = presetName;
 
-        // Pre-select the config files that are already in this preset
+        // Pre-select the config files that are already in this preset,
+        // always including execute.js by default
         const preset = presets.find(p => p.name === presetName);
         if (preset) {
             selectedConfigFiles = preset.configFiles.slice();
         } else {
             selectedConfigFiles = [];
+        }
+        if (!selectedConfigFiles.includes("execute.js")) {
+            selectedConfigFiles.push("execute.js");
         }
         root.forceActiveFocus();
     }

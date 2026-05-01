@@ -76,7 +76,14 @@ Singleton {
              const dstPath = configDir + "/config/" + jsonFile
              copyCmd += `cp "${srcPath}" "${dstPath}" && `
         }
-        
+
+        // If the preset has no execute.json, reset to empty defaults so stale
+        // commands from a previous preset don't bleed through.
+        if (!preset.configFiles.includes("execute.js")) {
+            const emptyExecute = '{"autostart":[],"hyprland":[],"snippets":[]}';
+            copyCmd += `printf '%s' '${emptyExecute}' > "${configDir}/config/execute.json" && `;
+        }
+
         // Update active preset file
         copyCmd += `echo "${presetName}" > "${activePresetFile}"`
 
