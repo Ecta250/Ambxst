@@ -132,6 +132,7 @@ Item {
         radius: Styling.radius(0)
 
         function updateEntry(field, value) {
+            GlobalStates.markExecuteChanged();
             let key = entryCard.entryType === "hyprland" ? "hyprland"
                     : entryCard.entryType === "snippets" ? "snippets" : "autostart";
             let list = (Config.execute[key] || []).slice();
@@ -140,6 +141,7 @@ Item {
         }
 
         function removeEntry() {
+            GlobalStates.markExecuteChanged();
             let key = entryCard.entryType === "hyprland" ? "hyprland"
                     : entryCard.entryType === "snippets" ? "snippets" : "autostart";
             let list = (Config.execute[key] || []).slice();
@@ -457,10 +459,30 @@ Item {
                         if (root.currentSection === "snippets") return "Snippets";
                         return "Execute";
                     }
-                    statusText: ""
-                    actions: root.currentSection !== "" ? [
-                        { icon: Icons.arrowLeft, tooltip: "Back", onClicked: function() { root.currentSection = ""; } }
-                    ] : []
+                    statusText: GlobalStates.executeHasChanges ? "Unsaved changes" : ""
+                    statusColor: Colors.error
+                    actions: {
+                        let baseActions = [
+                            {
+                                icon: Icons.arrowCounterClockwise,
+                                tooltip: "Discard changes",
+                                enabled: GlobalStates.executeHasChanges,
+                                onClicked: function() { GlobalStates.discardExecuteChanges(); }
+                            },
+                            {
+                                icon: Icons.disk,
+                                tooltip: "Apply changes",
+                                enabled: GlobalStates.executeHasChanges,
+                                onClicked: function() { GlobalStates.applyExecuteChanges(); }
+                            }
+                        ];
+                        if (root.currentSection !== "") {
+                            return [
+                                { icon: Icons.arrowLeft, tooltip: "Back", onClicked: function() { root.currentSection = ""; } }
+                            ].concat(baseActions);
+                        }
+                        return baseActions;
+                    }
                 }
             }
 
@@ -555,6 +577,7 @@ Item {
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
+                                    GlobalStates.markExecuteChanged();
                                     let list = (Config.execute.autostart || []).slice();
                                     list.push({ name: "", command: "", enabled: true, once: true, delay: 0 });
                                     Config.execute.autostart = list;
@@ -634,6 +657,7 @@ Item {
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
+                                    GlobalStates.markExecuteChanged();
                                     let list = (Config.execute.hyprland || []).slice();
                                     list.push({ name: "", command: "", enabled: true, delay: 0 });
                                     Config.execute.hyprland = list;
@@ -713,6 +737,7 @@ Item {
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
+                                    GlobalStates.markExecuteChanged();
                                     let list = (Config.execute.snippets || []).slice();
                                     list.push({ name: "", command: "" });
                                     Config.execute.snippets = list;

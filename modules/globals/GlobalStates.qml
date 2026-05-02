@@ -542,6 +542,116 @@ Singleton {
     }
 
     // ═══════════════════════════════════════════════════════════════
+    // EXECUTE SETTINGS STATE
+    // ═══════════════════════════════════════════════════════════════
+    property bool executeHasChanges: false
+    property var executeSnapshot: null
+
+    readonly property var _executeProps: ["autostart", "hyprland", "snippets"]
+
+    function createExecuteSnapshot() {
+        var snapshot = {};
+        for (var i = 0; i < _executeProps.length; i++) {
+            var prop = _executeProps[i];
+            var val = Config.execute[prop];
+            snapshot[prop] = val ? JSON.parse(JSON.stringify(val)) : [];
+        }
+        return snapshot;
+    }
+
+    function restoreExecuteSnapshot(snapshot) {
+        if (!snapshot) return;
+        for (var i = 0; i < _executeProps.length; i++) {
+            var prop = _executeProps[i];
+            if (snapshot[prop] !== undefined) {
+                Config.execute[prop] = JSON.parse(JSON.stringify(snapshot[prop]));
+            }
+        }
+    }
+
+    function markExecuteChanged() {
+        if (!executeHasChanges) {
+            executeSnapshot = createExecuteSnapshot();
+            Config.pauseAutoSave = true;
+        }
+        executeHasChanges = true;
+    }
+
+    function applyExecuteChanges() {
+        if (executeHasChanges) {
+            Config.saveExecute();
+            executeHasChanges = false;
+            executeSnapshot = null;
+            Config.pauseAutoSave = false;
+        }
+    }
+
+    function discardExecuteChanges() {
+        if (executeHasChanges && executeSnapshot) {
+            restoreExecuteSnapshot(executeSnapshot);
+            executeHasChanges = false;
+            executeSnapshot = null;
+            Config.pauseAutoSave = false;
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // WALLPAPER SETTINGS STATE
+    // ═══════════════════════════════════════════════════════════════
+    property bool wallpaperHasChanges: false
+    property var wallpaperSnapshot: null
+
+    readonly property var _wallpaperProps: [
+        "enabled", "wallpaper", "rotationEnabled", "rotationOnStartup",
+        "rotationInterval", "rotationFolder", "rotationMode", "exportBg"
+    ]
+
+    function createWallpaperSnapshot() {
+        var snapshot = {};
+        for (var i = 0; i < _wallpaperProps.length; i++) {
+            var prop = _wallpaperProps[i];
+            snapshot[prop] = Config.wallpaper[prop];
+        }
+        return snapshot;
+    }
+
+    function restoreWallpaperSnapshot(snapshot) {
+        if (!snapshot) return;
+        for (var i = 0; i < _wallpaperProps.length; i++) {
+            var prop = _wallpaperProps[i];
+            if (snapshot[prop] !== undefined) {
+                Config.wallpaper[prop] = snapshot[prop];
+            }
+        }
+    }
+
+    function markWallpaperChanged() {
+        if (!wallpaperHasChanges) {
+            wallpaperSnapshot = createWallpaperSnapshot();
+            Config.pauseAutoSave = true;
+        }
+        wallpaperHasChanges = true;
+    }
+
+    function applyWallpaperChanges() {
+        if (wallpaperHasChanges) {
+            Config.saveWallpaper();
+            wallpaperHasChanges = false;
+            wallpaperSnapshot = null;
+            Config.pauseAutoSave = false;
+        }
+    }
+
+    function discardWallpaperChanges() {
+        if (wallpaperHasChanges && wallpaperSnapshot) {
+            restoreWallpaperSnapshot(wallpaperSnapshot);
+            wallpaperHasChanges = false;
+            wallpaperSnapshot = null;
+            Config.pauseAutoSave = false;
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
     // ASSISTANT SIDEBAR STATE
     // ═══════════════════════════════════════════════════════════════
     property bool assistantVisible: false

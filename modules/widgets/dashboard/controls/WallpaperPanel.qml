@@ -178,10 +178,30 @@ Item {
                         if (root.currentSection === "rotation") return "Rotation";
                         return "Wallpaper";
                     }
-                    statusText: ""
-                    actions: root.currentSection !== "" ? [
-                        { icon: Icons.arrowLeft, tooltip: "Back", onClicked: function() { root.currentSection = ""; } }
-                    ] : []
+                    statusText: GlobalStates.wallpaperHasChanges ? "Unsaved changes" : ""
+                    statusColor: Colors.error
+                    actions: {
+                        let baseActions = [
+                            {
+                                icon: Icons.arrowCounterClockwise,
+                                tooltip: "Discard changes",
+                                enabled: GlobalStates.wallpaperHasChanges,
+                                onClicked: function() { GlobalStates.discardWallpaperChanges(); }
+                            },
+                            {
+                                icon: Icons.disk,
+                                tooltip: "Apply changes",
+                                enabled: GlobalStates.wallpaperHasChanges,
+                                onClicked: function() { GlobalStates.applyWallpaperChanges(); }
+                            }
+                        ];
+                        if (root.currentSection !== "") {
+                            return [
+                                { icon: Icons.arrowLeft, tooltip: "Back", onClicked: function() { root.currentSection = ""; } }
+                            ].concat(baseActions);
+                        }
+                        return baseActions;
+                    }
                 }
             }
 
@@ -205,7 +225,7 @@ Item {
                             label: "Export as ~/bg.png"
                             description: "Copy the current wallpaper to ~/bg.png every time it changes (uses ImageMagick/ffmpeg)"
                             checked: Config.wallpaper.exportBg
-                            toggleCallback: function() { Config.wallpaper.exportBg = !Config.wallpaper.exportBg; }
+                            toggleCallback: function() { GlobalStates.markWallpaperChanged(); Config.wallpaper.exportBg = !Config.wallpaper.exportBg; }
                         }
 
                         Rectangle {
@@ -237,7 +257,7 @@ Item {
                             label: "Enable preset wallpaper"
                             description: "When this preset loads, the wallpaper below is applied (ignored if rotation is on)"
                             checked: Config.wallpaper.enabled
-                            toggleCallback: function() { Config.wallpaper.enabled = !Config.wallpaper.enabled; }
+                            toggleCallback: function() { GlobalStates.markWallpaperChanged(); Config.wallpaper.enabled = !Config.wallpaper.enabled; }
                         }
 
                         ColumnLayout {
@@ -332,8 +352,10 @@ Item {
                                         hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
-                                            if (GlobalStates.wallpaperManager)
+                                            if (GlobalStates.wallpaperManager) {
+                                                GlobalStates.markWallpaperChanged();
                                                 Config.wallpaper.wallpaper = GlobalStates.wallpaperManager.currentWallpaper;
+                                            }
                                         }
                                     }
                                 }
@@ -359,7 +381,7 @@ Item {
                                         anchors.fill: parent
                                         hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
-                                        onClicked: Config.wallpaper.wallpaper = ""
+                                        onClicked: { GlobalStates.markWallpaperChanged(); Config.wallpaper.wallpaper = ""; }
                                     }
 
                                     StyledToolTip { visible: clearArea.containsMouse; tooltipText: "Clear" }
@@ -378,7 +400,7 @@ Item {
                             label: "Enable rotation"
                             description: "Automatically cycle through wallpapers. Overrides preset wallpaper when active."
                             checked: Config.wallpaper.rotationEnabled
-                            toggleCallback: function() { Config.wallpaper.rotationEnabled = !Config.wallpaper.rotationEnabled; }
+                            toggleCallback: function() { GlobalStates.markWallpaperChanged(); Config.wallpaper.rotationEnabled = !Config.wallpaper.rotationEnabled; }
                         }
 
                         ColumnLayout {
@@ -406,13 +428,13 @@ Item {
                                     ModeButton {
                                         label: "Random"
                                         active: Config.wallpaper.rotationMode === "random"
-                                        onClicked: function() { Config.wallpaper.rotationMode = "random"; }
+                                        onClicked: function() { GlobalStates.markWallpaperChanged(); Config.wallpaper.rotationMode = "random"; }
                                     }
 
                                     ModeButton {
                                         label: "Sequential"
                                         active: Config.wallpaper.rotationMode === "sequential"
-                                        onClicked: function() { Config.wallpaper.rotationMode = "sequential"; }
+                                        onClicked: function() { GlobalStates.markWallpaperChanged(); Config.wallpaper.rotationMode = "sequential"; }
                                     }
                                 }
                             }
@@ -434,7 +456,7 @@ Item {
                                     label: "On startup"
                                     description: "Rotate once when Ambxst starts"
                                     checked: Config.wallpaper.rotationOnStartup
-                                    toggleCallback: function() { Config.wallpaper.rotationOnStartup = !Config.wallpaper.rotationOnStartup; }
+                                    toggleCallback: function() { GlobalStates.markWallpaperChanged(); Config.wallpaper.rotationOnStartup = !Config.wallpaper.rotationOnStartup; }
                                 }
 
                                 // Interval
@@ -447,6 +469,7 @@ Item {
                                         description: "Rotate on a recurring timer"
                                         checked: Config.wallpaper.rotationInterval > 0
                                         toggleCallback: function() {
+                                            GlobalStates.markWallpaperChanged();
                                             Config.wallpaper.rotationInterval = Config.wallpaper.rotationInterval > 0 ? 0 : 300;
                                         }
                                     }
@@ -484,7 +507,10 @@ Item {
                                                 text: Config.wallpaper.rotationInterval.toString()
                                                 onEditingFinished: {
                                                     var v = parseInt(text);
-                                                    if (!isNaN(v) && v >= 10) Config.wallpaper.rotationInterval = v;
+                                                    if (!isNaN(v) && v >= 10) {
+                                                        GlobalStates.markWallpaperChanged();
+                                                        Config.wallpaper.rotationInterval = v;
+                                                    }
                                                 }
                                             }
                                         }
@@ -519,15 +545,17 @@ Item {
                                     ModeButton {
                                         label: "Wallpaper dir"
                                         active: Config.wallpaper.rotationFolder === ""
-                                        onClicked: function() { Config.wallpaper.rotationFolder = ""; }
+                                        onClicked: function() { GlobalStates.markWallpaperChanged(); Config.wallpaper.rotationFolder = ""; }
                                     }
 
                                     ModeButton {
                                         label: "Custom folder"
                                         active: Config.wallpaper.rotationFolder !== ""
                                         onClicked: function() {
-                                            if (Config.wallpaper.rotationFolder === "" && GlobalStates.wallpaperManager)
+                                            if (Config.wallpaper.rotationFolder === "" && GlobalStates.wallpaperManager) {
+                                                GlobalStates.markWallpaperChanged();
                                                 Config.wallpaper.rotationFolder = GlobalStates.wallpaperManager.wallpaperDir || "";
+                                            }
                                         }
                                     }
                                 }
@@ -565,7 +593,7 @@ Item {
                                                 visible: folderInput.text === ""
                                             }
 
-                                            onEditingFinished: Config.wallpaper.rotationFolder = text
+                                            onEditingFinished: { GlobalStates.markWallpaperChanged(); Config.wallpaper.rotationFolder = text; }
                                         }
                                     }
 
