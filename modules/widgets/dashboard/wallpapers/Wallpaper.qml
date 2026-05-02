@@ -293,7 +293,21 @@ PanelWindow {
     }
 
     onCurrentWallpaperChanged: {
-        // Matugen is executed manually in change functions
+        if (GlobalStates.wallpaperManager !== wallpaper) return;
+        if (!currentWallpaper) return;
+        if (!Config.wallpaperReady || !Config.wallpaper.exportBg) return;
+        var p = currentWallpaper;
+        var dest = Quickshell.env("HOME") + "/bg.png";
+        var ext = p.split('.').pop().toLowerCase();
+        var cmd;
+        if (["mp4", "webm", "mov", "avi", "mkv"].indexOf(ext) !== -1)
+            cmd = "ffmpeg -y -i '" + p + "' -vframes 1 '" + dest + "' 2>/dev/null";
+        else if (ext === "gif")
+            cmd = "convert '" + p + "[0]' '" + dest + "' 2>/dev/null";
+        else
+            cmd = "convert '" + p + "' '" + dest + "' 2>/dev/null";
+        exportBgProcess.command = ["bash", "-c", cmd];
+        exportBgProcess.running = true;
     }
 
     // -------------------------------------------------------------------
@@ -831,6 +845,12 @@ PanelWindow {
             if (code === 0) console.log("Color preset applied successfully");
             else console.warn("Failed to apply color preset, code:", code);
         }
+    }
+
+    Process {
+        id: exportBgProcess
+        running: false
+        command: []
     }
 
     // -------------------------------------------------------------------

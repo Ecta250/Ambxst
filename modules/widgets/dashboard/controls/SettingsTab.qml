@@ -16,7 +16,7 @@ Rectangle {
     color: "transparent"
     implicitWidth: 400
     implicitHeight: 300
-    // 0: Network, 1: Bluetooth, 2: Mixer, 3: AI, 4: Effects, 5: Theme, 6: Binds, 7: System, 8: Compositor, 9: Shell, 10: Execute
+    // 0: Network, 1: Bluetooth, 2: Mixer, 3: AI, 4: Effects, 5: Theme, 6: Binds, 7: System, 8: Compositor, 9: Shell, 10: Execute, 11: Wallpaper
 
     property int currentSection: 0
     property int selectedIndex: GlobalStates.settingsCurrentTab
@@ -125,8 +125,8 @@ Rectangle {
         if (!subSectionId || subSectionId === "")
             return;
 
-        // Panels that support subsections: Theme(5), System(7), Compositor(8), Shell(9), Execute(10)
-        if ([5, 7, 8, 9, 10].includes(sectionId)) {
+        // Panels that support subsections: Theme(5), System(7), Compositor(8), Shell(9), Execute(10), Wallpaper(11)
+        if ([5, 7, 8, 9, 10, 11].includes(sectionId)) {
             if (panelLoader.item && panelLoader.status === Loader.Ready) {
                 panelLoader.item.currentSection = subSectionId;
             } else {
@@ -264,6 +264,12 @@ Rectangle {
             icon: Icons.lightning,
             label: "Execute",
             section: 10,
+            isIcon: true
+        },
+        {
+            icon: Icons.image,
+            label: "Wallpaper",
+            section: 11,
             isIcon: true
         }
     ]
@@ -605,6 +611,10 @@ Rectangle {
                 {
                     component: "ExecutePanel.qml",
                     section: 10
+                },
+                {
+                    component: "WallpaperPanel.qml",
+                    section: 11
                 }
             ]
 

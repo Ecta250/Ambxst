@@ -22,6 +22,7 @@ import "defaults/system.js" as SystemDefaults
 import "defaults/dock.js" as DockDefaults
 import "defaults/ai.js" as AiDefaults
 import "defaults/execute.js" as ExecuteDefaults
+import "defaults/wallpaper.js" as WallpaperDefaults
 import "ConfigValidator.js" as ConfigValidator
 
 Singleton {
@@ -58,9 +59,11 @@ Singleton {
     property bool aiReady: false
     property bool executeReady: false
     signal executeConfigReloaded()
+    property bool wallpaperReady: false
+    signal wallpaperConfigReloaded()
     property bool keybindsInitialLoadComplete: false
 
-    property bool initialLoadComplete: themeReady && barReady && workspacesReady && overviewReady && notchReady && compositorReady && performanceReady && weatherReady && desktopReady && lockscreenReady && prefixReady && systemReady && dockReady && aiReady && executeReady
+    property bool initialLoadComplete: themeReady && barReady && workspacesReady && overviewReady && notchReady && compositorReady && performanceReady && weatherReady && desktopReady && lockscreenReady && prefixReady && systemReady && dockReady && aiReady && executeReady && wallpaperReady
 
     // Compatibility aliases
     property alias loader: themeLoader
@@ -89,6 +92,7 @@ Singleton {
             "cp -n '" + root.presetDir + "/ai.json' '" + root.configDir + "/ai.json' 2>/dev/null || true; " +
             "cp -n '" + root.presetDir + "/system.json' '" + root.configDir + "/system.json' 2>/dev/null || true; " +
             "test -f '" + root.configDir + "/execute.json' || echo '{\"autostart\":[],\"hyprland\":[],\"snippets\":[]}' > '" + root.configDir + "/execute.json'; " +
+            "test -f '" + root.configDir + "/wallpaper.json' || echo '{\"enabled\":false,\"wallpaper\":\"\",\"rotationEnabled\":false,\"rotationOnStartup\":false,\"rotationInterval\":0,\"rotationFolder\":\"\",\"rotationMode\":\"random\",\"exportBg\":false}' > '" + root.configDir + "/wallpaper.json'; " +
             "echo 'Preset files copied if missing'"
         ]
     }
@@ -1236,6 +1240,56 @@ Singleton {
             property list<var> autostart: []
             property list<var> hyprland: []
             property list<var> snippets: []
+        }
+    }
+
+    // ============================================
+    // WALLPAPER MODULE
+    // ============================================
+    FileView {
+        id: wallpaperLoader
+        path: root.configDir + "/wallpaper.json"
+        atomicWrites: true
+        watchChanges: true
+        onLoaded: {
+            if (!root.wallpaperReady) {
+                validateModule("wallpaper", wallpaperLoader, WallpaperDefaults.data, () => {
+                    root.wallpaperReady = true;
+                    Qt.callLater(() => { if (!root.pauseAutoSave) wallpaperLoader.writeAdapter(); });
+                });
+            } else {
+                root.wallpaperConfigReloaded();
+            }
+        }
+        onLoadFailed: {
+            if (error.toString().includes("FileNotFound") && !root.wallpaperReady) {
+                handleMissingConfig("wallpaper", wallpaperLoader, WallpaperDefaults.data, () => {
+                    root.wallpaperReady = true;
+                    Qt.callLater(() => { if (!root.pauseAutoSave) wallpaperLoader.writeAdapter(); });
+                });
+            }
+        }
+        onFileChanged: {
+            root.pauseAutoSave = true;
+            reload();
+            root.pauseAutoSave = false;
+        }
+        onPathChanged: reload()
+        onAdapterUpdated: {
+            if (root.wallpaperReady && !root.pauseAutoSave) {
+                wallpaperLoader.writeAdapter();
+            }
+        }
+
+        adapter: JsonAdapter {
+            property bool enabled: false
+            property string wallpaper: ""
+            property bool rotationEnabled: false
+            property bool rotationOnStartup: false
+            property int rotationInterval: 0
+            property string rotationFolder: ""
+            property string rotationMode: "random"
+            property bool exportBg: false
         }
     }
 
@@ -3388,6 +3442,9 @@ Singleton {
     // Execute configuration
     property QtObject execute: executeLoader.adapter
 
+    // Wallpaper preset configuration
+    property QtObject wallpaper: wallpaperLoader.adapter
+
     // Module save functions
     function saveBar() {
         barLoader.writeAdapter();
@@ -3433,6 +3490,10 @@ Singleton {
     }
     function saveExecute() {
         executeLoader.writeAdapter();
+    }
+
+    function saveWallpaper() {
+        wallpaperLoader.writeAdapter();
     }
 
     // Color helpers

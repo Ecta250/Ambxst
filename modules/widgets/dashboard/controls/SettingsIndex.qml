@@ -219,7 +219,19 @@ QtObject {
         { label: "Hyprland Exec", keywords: "hyprctl dispatch exec compositor startup command", section: 10, subSection: "hyprland", subLabel: "Execute > Hyprland", icon: Icons.lightning, isIcon: true },
 
         // Execute > Snippets
-        { label: "Snippets", keywords: "quick run bash commands manual fire trigger scripts shortcut", section: 10, subSection: "snippets", subLabel: "Execute > Snippets", icon: Icons.lightning, isIcon: true }
+        { label: "Snippets", keywords: "quick run bash commands manual fire trigger scripts shortcut", section: 10, subSection: "snippets", subLabel: "Execute > Snippets", icon: Icons.lightning, isIcon: true },
+
+        // --- Wallpaper ---
+        { label: "Wallpaper", keywords: "background image preset rotation change", section: 11, subSection: "", subLabel: "", icon: Icons.image, isIcon: true },
+        { label: "Export bg.png", keywords: "export background copy home bg.png file", section: 11, subSection: "", subLabel: "Wallpaper", icon: Icons.image, isIcon: true },
+
+        // Wallpaper > Preset
+        { label: "Per-Preset Wallpaper", keywords: "preset specific background image set current", section: 11, subSection: "preset", subLabel: "Wallpaper > Preset", icon: Icons.image, isIcon: true },
+
+        // Wallpaper > Rotation
+        { label: "Wallpaper Rotation", keywords: "rotate change random sequential folder timer interval startup", section: 11, subSection: "rotation", subLabel: "Wallpaper > Rotation", icon: Icons.repeat, isIcon: true },
+        { label: "Rotation Interval", keywords: "timer seconds auto change wallpaper every", section: 11, subSection: "rotation", subLabel: "Wallpaper > Rotation", icon: Icons.clock, isIcon: true },
+        { label: "Rotation Folder", keywords: "directory path folder custom wallpapers", section: 11, subSection: "rotation", subLabel: "Wallpaper > Rotation", icon: Icons.folder, isIcon: true }
     ]
 
     property var items: staticItems.concat(dynamicItems)

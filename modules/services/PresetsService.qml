@@ -84,6 +84,13 @@ Singleton {
             copyCmd += `printf '%s' '${emptyExecute}' > "${configDir}/config/execute.json" && `;
         }
 
+        // If the preset has no wallpaper.json, reset to disabled defaults so stale
+        // settings from a previous preset don't bleed through.
+        if (!preset.configFiles.includes("wallpaper.js")) {
+            const emptyWallpaper = '{"enabled":false,"wallpaper":"","rotationEnabled":false,"rotationOnStartup":false,"rotationInterval":0,"rotationFolder":"","rotationMode":"random","exportBg":false}';
+            copyCmd += `printf '%s' '${emptyWallpaper}' > "${configDir}/config/wallpaper.json" && `;
+        }
+
         // Update active preset file
         copyCmd += `echo "${presetName}" > "${activePresetFile}"`
 

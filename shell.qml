@@ -289,6 +289,7 @@ ShellRoot {
                 _ = GlobalShortcuts.appId; // Force init (IPC pipe listener)
                 _ = BatteryAlertService.enabled;
                 _ = ExecuteService.launched; // Force init
+                _ = WallpaperPresetService.ready; // Force init
             });
         }
     }
