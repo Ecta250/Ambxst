@@ -465,6 +465,7 @@ Singleton {
                 console.log("Preset loaded successfully:", root.currentPreset)
                 Quickshell.execDetached(["notify-send", "Preset Loaded", `Preset "${root.currentPreset}" loaded successfully.`])
                 root.activePreset = root.currentPreset
+                Quickshell.execDetached(["ambxst", "reload"])
             } else {
                 console.warn("Failed to load preset:", root.currentPreset)
                 Quickshell.execDetached(["notify-send", "Error", `Failed to load preset "${root.currentPreset}".`])
