@@ -60,6 +60,7 @@ Singleton {
         const preset = presets.find(p => p.name === presetName)
         if (!preset) {
             console.warn("Preset not found in list:", presetName)
+            currentPreset = ""
             return
         }
 
@@ -484,6 +485,34 @@ Singleton {
             onStreamFinished: {
                 root.activePreset = text.trim()
             }
+        }
+    }
+
+    // Tracks whether the active_preset file has been read at least once on startup
+    property bool _activePresetInitialized: false
+
+    // Watch active_preset file — loads the named preset when it changes externally
+    FileView {
+        id: activePresetWatcher
+        path: root.activePresetFile
+        watchChanges: true
+        printErrors: false
+
+        onFileChanged: reload()
+
+        onLoaded: {
+            const newPreset = text().trim()
+            if (!root._activePresetInitialized) {
+                root._activePresetInitialized = true
+                root.activePreset = newPreset
+            } else if (newPreset !== "" && newPreset !== root.activePreset && root.currentPreset === "") {
+                console.log("active_preset changed externally, loading preset:", newPreset)
+                root.loadPreset(newPreset)
+            }
+        }
+
+        onLoadFailed: {
+            root._activePresetInitialized = true
         }
     }
 
